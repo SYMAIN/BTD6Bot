@@ -1,9 +1,8 @@
-"""
-Author: Simmon Yang
-Date Created: Nov 19, 2025
+# @Author: Simmon
+# @Date: 2025-11-21 11:44:01
+# @Last Modified by:   undefined
+# @Last Modified time: 2025-11-21 11:44:01
 
-Version: 0.1
-"""
 
 from BTD6bot import Bot
 
