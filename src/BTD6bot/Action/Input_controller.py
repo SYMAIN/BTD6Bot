@@ -1,7 +1,5 @@
 # @Author: Simmon
 # @Date: 2025-11-20 23:34:13
-# @Last Modified by:   undefined
-# @Last Modified time: 2025-11-20 23:34:13
 
 """
 Mouse and Keyboard Controller

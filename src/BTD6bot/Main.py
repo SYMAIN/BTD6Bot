@@ -4,7 +4,7 @@
 # @Last Modified time: 2025-11-21 11:44:01
 
 
-from BTD6bot import Bot
+from Bot import Bot
 
 if __name__ == "__main__":
     bot = Bot()
