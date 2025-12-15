@@ -9,6 +9,7 @@ class Game_State:
         self.gold = 0
         self.is_game_active = False
         self.set_mode(game_mode)
+        self.monkey_location = [] # [[name,(x,y)]]
     
     def set_mode(self, game_mode):
         if game_mode == "easy":
