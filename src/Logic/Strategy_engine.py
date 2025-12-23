@@ -51,48 +51,50 @@ class Strategy_engine:
             "location": location,
             }
         """
-        for option in upgrade_options:
-            print(f"options: {option} ")
+        current_gold = self.game.gold
+
+        option = None
+        for _option in upgrade_options:
+            if current_gold >= _option["cost"]:
+                option = _option
+                break
+            print(f"options: {_option} ")
         print("\n\n")
 
-        current_gold = self.game.gold
-        if len(upgrade_options) > 0:
-            # Upgrade path
-            option = upgrade_options[0]
-            if current_gold >= option["cost"]:
-                # Upgrade
-                location = option["location"]
-                path = option["path"]
-                self.controller.upgrade_monkey(path, location[1], location[0])  # (y,x)
-                # TODO: Fix upgrade; only upgrades top path
-                # updating saved game data
-                idx = option["position_idx"]
-                new_data = self.game.monkey_location[idx].copy()
-                new_path = new_data["path"]
-                if path == 1:
-                    new_path = (new_path[0] + 1, new_path[1], new_path[2])
-                elif path == 2:
-                    new_path = (new_path[0], new_path[1] + 1, new_path[2])
-                elif path == 3:
-                    new_path = (new_path[0], new_path[1], new_path[2] + 1)
+        # Upgrade path
+        if option is not None:
+            # Upgrade
+            location = option["location"]
+            path = option["path"]
+            self.controller.upgrade_monkey(path, location[0], location[1])  # (y,x)
+            # TODO: Fix upgrade; only upgrades top path
+            # updating saved game data
+            idx = option["position_idx"]
+            new_data = self.game.monkey_location[idx].copy()
+            new_path = new_data["path"]
+            if path == 1:
+                new_path = (new_path[0] + 1, new_path[1], new_path[2])
+            elif path == 2:
+                new_path = (new_path[0], new_path[1] + 1, new_path[2])
+            elif path == 3:
+                new_path = (new_path[0], new_path[1], new_path[2] + 1)
 
-                new_data["path"] = new_path
-                self.game.update_monkey(new_data, idx)
+            new_data["path"] = new_path
+            self.game.update_monkey(new_data, idx)
 
-                print(f"Upgraded monkey: {new_data["name"]} | path: {new_path}")
+            print(f"Upgraded monkey: {new_data["name"]} | path: {new_path}")
         else:
             # Place monkey
             monkey_name, location = self._random_monkey_location()
-            self.controller.get_monkey_data(monkey_name)
             cost = self.controller.get_monkey_cost(monkey_name)
 
             if current_gold >= cost:
-                if self.controller.place_monkey(monkey_name, location[1], location[0]):
+                if self.controller.place_monkey(monkey_name, location[0], location[1]):
 
                     # Save monkey location
                     new_data = {
                         "name": monkey_name,
-                        "location": location,
+                        "location": location,  # (y,x)
                         "path": (0, 0, 0),
                     }
                     self.game.add_monkey(new_data)
@@ -107,7 +109,7 @@ class Strategy_engine:
         while True:
             x = random.randrange(game_size[1], game_size[3])  # x within width
             y = random.randrange(game_size[0], game_size[2])  # y within height
-
+            print(f"Random position: x{x}, y{y}")
             return monkey_name, (y, x)
 
     def determine_monkey_location(self):
@@ -167,7 +169,7 @@ class Strategy_engine:
                         "position_idx": idx,
                     }
                 )
-        sorted_upgrades = sorted(upgrade_options, key=lambda m: m["cost"], reverse=True)
+        sorted_upgrades = sorted(upgrade_options, key=lambda m: m["cost"])
         return sorted_upgrades
 
     def _get_available_upgrades(self, current):

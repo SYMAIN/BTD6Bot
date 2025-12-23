@@ -84,7 +84,7 @@ class Monkey_controller:
         time.sleep(0.3)
 
         pydirectinput.moveTo(x, y)
-        time.sleep(0.1)  # Short pause for rendering
+        time.sleep(0.5)  # Short pause for rendering
 
         if self.PD.is_valid(y, x):
             pydirectinput.click()
@@ -92,7 +92,7 @@ class Monkey_controller:
             return True
         else:
             # If invalid, cancel the whole operation
-            print(f"Invalid spot at ({x}, {y}). Cancelling.")
+            print(f"Invalid spot at ({y}, {x}). Cancelling.")
             pydirectinput.press("esc")  # Cancel placement mode
             return False
 

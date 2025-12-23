@@ -19,7 +19,7 @@ class Bot:
         self.scanner = Screen_scanner()
         self.game = Game_State()
         self.PD = Placement_detector(*self.game.return_game_size())
-        self.MC = Monkey_controller(self.PD, difficulty="medium")
+        self.MC = Monkey_controller(self.PD, difficulty="hard")
         self.SE = Strategy_engine(self.game, self.MC)
 
         # Control flags
@@ -28,7 +28,7 @@ class Bot:
 
         # Timing control
         self.last_capture_time = 0
-        self.capture_interval = 5.0  # Capture every 5 seconds
+        self.capture_interval = 5.0
         self.last_strategy_time = 0
 
         # Statistics

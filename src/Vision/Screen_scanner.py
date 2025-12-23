@@ -39,7 +39,7 @@ class Screen_scanner:
             ],
             "round": frame[
                 30 + self.offset_y : 75 + self.offset_y,
-                1400 + self.offset_x : 1555 + self.offset_x,
+                1400 + self.offset_x : 1560 + self.offset_x,
             ],
         }
 
@@ -111,4 +111,4 @@ class Screen_scanner:
         # Found through trial and error (DO NOT TOUCH)
         if self.screen == laptop_resolution:
             self.offset_y = 50
-            self.offset_x = -10
+            self.offset_x = -5

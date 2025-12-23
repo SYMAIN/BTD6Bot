@@ -10,7 +10,8 @@ if __name__ == "__main__":
     PC = Placement_detector(*GAME.return_game_size())
 
     while True:
-        x, y = pyautogui.position()
+        # x, y = pyautogui.position()
 
-        print(PC.is_valid(x, y))
-        time.sleep(0.5)
+        # print(PC.is_valid(x, y))
+
+        time.sleep(1)
