@@ -15,7 +15,7 @@ At the beginning of each round, use all abilities
 
 
 class Bot:
-    def __init__(self):
+    def __init__(self, pause_event):
         self.scanner = Screen_scanner()
         self.game = Game_State()
         self.PD = Placement_detector(*self.game.return_game_size())
@@ -24,6 +24,7 @@ class Bot:
 
         # Control flags
         self.running = True  # Allows external control
+        self.pause_event = pause_event
 
         # Timing control
         self.last_capture_time = 0
@@ -43,6 +44,7 @@ class Bot:
 
         try:
             while self.running:
+                self.pause_event.wait()
 
                 # Screen Capture
                 current_time = time.time()

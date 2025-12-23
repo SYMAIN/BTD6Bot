@@ -64,7 +64,7 @@ class Strategy_engine:
                 location = option["location"]
                 path = option["path"]
                 self.controller.upgrade_monkey(path, location[1], location[0])  # (y,x)
-
+                # TODO: Fix upgrade; only upgrades top path
                 # updating saved game data
                 idx = option["position_idx"]
                 new_data = self.game.monkey_location[idx].copy()

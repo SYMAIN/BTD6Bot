@@ -10,11 +10,13 @@ class Main:
     def __init__(self):
         self.bot_instance = None  # Track the bot instance
         self.running = False
+        self.pause = False
 
         # Set up hotkeys
         keyboard.add_hotkey("f2", self.start_process)
         keyboard.add_hotkey("f3", self.stop_process)
         keyboard.add_hotkey("ctrl+q", self.exit_program)
+        keyboard.add_hotkey("ctrl+p", self.pause_program)
         keyboard.add_hotkey("f1", self.key_instruction)
 
     def run(self):
@@ -49,11 +51,14 @@ class Main:
         print("\nStarting bot...")
         self.running = True
 
-        # Create and start bot instance
-        self.bot_instance = BotClass()
-
         # Start bot in a separate thread so we don't block hotkeys
         import threading
+
+        self.pause_event = threading.Event()
+        self.pause_event.set()
+
+        # Create and start bot instance
+        self.bot_instance = BotClass(pause_event=self.pause_event)
 
         self.bot_thread = threading.Thread(target=self._run_bot)
         self.bot_thread.daemon = True  # Thread will exit when main program exits
@@ -82,8 +87,10 @@ class Main:
         self.running = False
 
         # Signal the bot to stop
-        if hasattr(self.bot_instance, "running"):
+        if self.bot_instance:
             self.bot_instance.running = False
+
+        self.pause_event.set()
 
         # Wait a bit for clean shutdown
         time.sleep(0.5)
@@ -115,6 +122,18 @@ class Main:
         import sys
 
         sys.exit(0)
+
+    def pause_program(self):
+        if not self.running:
+            print("Bot is not running!")
+            return
+
+        if self.pause_event.is_set():
+            print("Pausing...")
+            self.pause_event.clear()  # pause
+        else:
+            print("Unpausing...")
+            self.pause_event.set()  # resume
 
 
 if __name__ == "__main__":
