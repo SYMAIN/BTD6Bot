@@ -2,9 +2,11 @@
 # @Date: 2025-11-21 11:43:56
 
 from Vision.Screen_scanner import Screen_scanner
+from Action.Monkey_controller import Monkey_controller
+from Logic.Strategy_engine import Strategy_engine
+from Vision.Placement_detector import Placement_detector
 from Game import Game_State
 import time
-import threading
 
 """
 At the beginning of each round, use all abilities
@@ -16,6 +18,9 @@ class Bot:
     def __init__(self):
         self.scanner = Screen_scanner()
         self.game = Game_State()
+        self.PD = Placement_detector(*self.game.return_game_size())
+        self.MC = Monkey_controller(self.PD, difficulty="medium")
+        self.SE = Strategy_engine(self.game, self.MC)
 
         # Control flags
         self.running = True  # Allows external control
@@ -23,21 +28,29 @@ class Bot:
         # Timing control
         self.last_capture_time = 0
         self.capture_interval = 5.0  # Capture every 5 seconds
+        self.last_strategy_time = 0
 
         # Statistics
         self.capture_count = 0
         self.start_time = time.time()
+        self.end_round = False
 
     def run(self):
         """Main bot loop - can be stopped by setting self.running = False"""
         print("Bot main loop started")
 
+        self.SE.select_strategy(1)  # First strategy
+
         try:
             while self.running:
 
+                # Screen Capture
                 current_time = time.time()
                 if current_time - self.last_capture_time >= self.capture_interval:
+
                     self.screen_capture()
+                    self.SE.run()
+
                     self.last_capture_time = current_time
                     self.capture_count += 1
 

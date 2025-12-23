@@ -9,7 +9,6 @@ import re
 import time
 import pyautogui
 
-
 pytesseract.pytesseract.tesseract_cmd = r"X:\Tesseract\tesseract.exe"
 
 
@@ -30,15 +29,15 @@ class Screen_scanner:
 
     def process_frame(self, frame):
         regions = {
-            "Health": frame[
+            "health": frame[
                 20 + self.offset_y : 60 + self.offset_y,
                 140 + self.offset_x : 290 + self.offset_x,
             ],
-            "Gold": frame[
+            "gold": frame[
                 20 + self.offset_y : 60 + self.offset_y,
                 370 - self.offset_x : 650,
             ],
-            "Round": frame[
+            "round": frame[
                 30 + self.offset_y : 75 + self.offset_y,
                 1400 + self.offset_x : 1555 + self.offset_x,
             ],
@@ -48,23 +47,17 @@ class Screen_scanner:
         for k, v in regions.items():
             text = self.OCR_detection(k, v)
 
-            if k == "Round":
+            if k == "round":
                 nums = re.findall(r"\d+", text)
                 if len(nums) >= 2:
                     res[k] = {"current": int(nums[0]), "total": int(nums[1])}
                 else:
                     res[k] = {"current": None, "total": None}
-            elif k == "Gold":
+            elif k == "gold":
                 clean = text.replace("$", "").replace(",", "")
-                try:
-                    res[k] = int(clean) if clean.isdigit() else 0
-                except:
-                    res[k] = 0
+                res[k] = int(clean)
             else:
-                try:
-                    res[k] = int(text) if text.isdigit() else 100
-                except:
-                    res[k] = 100
+                res[k] = int(text)
 
         return res
 
