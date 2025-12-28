@@ -1,3 +1,3 @@
-from . import Strategy_engine
-from . import Threat_detector
-from . import Upgrade_manager
+from . import strategy_engine
+from . import threat_detector
+from . import upgrade_manager

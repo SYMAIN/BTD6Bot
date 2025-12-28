@@ -8,17 +8,14 @@ import pytesseract
 import re
 import time
 import pyautogui
+from config.settings import Settings
 
-pytesseract.pytesseract.tesseract_cmd = r"X:\Tesseract\tesseract.exe"
+pytesseract.pytesseract.tesseract_cmd = Settings.TESSERACT_PATH
 
 
-class Screen_scanner:
+class ScreenScanner:
     def __init__(self):
-        # Resolution adjustments (+ In game scaling)
-        self.screen = pyautogui.size()
-        self.offset_x = 0
-        self.offset_y = 0
-        self._set_offset()
+        pass
 
     def capture(self):
         with mss.mss() as sct:
@@ -27,25 +24,20 @@ class Screen_scanner:
             frame = np.array(screenshot)
             return self.process_frame(frame)
 
-    def process_frame(self, frame):
+    def process_frame(self, frame) -> dict:
+        health = Settings.CURRENT_UI["health"]
+        gold = Settings.CURRENT_UI["gold"]
+        _round = Settings.CURRENT_UI["round"]
+
         regions = {
-            "health": frame[
-                20 + self.offset_y : 60 + self.offset_y,
-                140 + self.offset_x : 290 + self.offset_x,
-            ],
-            "gold": frame[
-                20 + self.offset_y : 60 + self.offset_y,
-                370 - self.offset_x : 650,
-            ],
-            "round": frame[
-                30 + self.offset_y : 75 + self.offset_y,
-                1400 + self.offset_x : 1560 + self.offset_x,
-            ],
+            "health": frame[health[0] : health[1], health[2] : health[3]],
+            "gold": frame[gold[0] : gold[1], gold[2] : gold[3]],
+            "round": frame[_round[0] : _round[1], _round[2] : _round[3]],
         }
 
         res = {}
         for k, v in regions.items():
-            text = self.OCR_detection(k, v)
+            text = self._OCR_detection(k, v)
 
             if k == "round":
                 nums = re.findall(r"\d+", text)
@@ -56,18 +48,18 @@ class Screen_scanner:
             elif k == "gold":
                 clean = text.replace("$", "").replace(",", "")
                 res[k] = int(clean)
-            else:
+            else:  # Health
                 res[k] = int(text)
 
         return res
 
-    def OCR_detection(self, name, frame):
+    def _OCR_detection(self, name: str, frame) -> str:
         try:
             mask = self._preprocess(frame)
 
             # Debug: Save image
             debug_path = (
-                rf"X:\Dev\BTD6Bot\Assets\Debug\{self.screen[1]}p\debug_{name}.png"
+                rf"{Settings.DEBUG_DIR}\{Settings.SCREEN_RES[1]}p\debug_{name}.png"
             )
             cv2.imwrite(debug_path, mask)
 
@@ -85,11 +77,11 @@ class Screen_scanner:
     def _preprocess(self, frame):
         try:
             # Create a mask where pixels are mostly white (all channels > 200)
-            white_mask = np.all(frame > 200, axis=2).astype(np.uint8) * 255
+            white_mask = np.all(frame > 240, axis=2).astype(np.uint8) * 255
 
             # Alternative - look for bright pixels (if method 1 fails)
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            _, bright_mask = cv2.threshold(gray, 220, 255, cv2.THRESH_BINARY)
+            _, bright_mask = cv2.threshold(gray, 255, 255, cv2.THRESH_BINARY)
 
             combined = cv2.bitwise_or(white_mask, bright_mask)
             if frame.shape[0] < 50:  # If ROI height is less than 50px
@@ -104,11 +96,3 @@ class Screen_scanner:
         except Exception as e:
             print(f"Preprocessing error: {e}")
             return np.zeros((50, 200), dtype=np.uint8)
-
-    def _set_offset(self):
-        laptop_resolution = (1920, 1200)
-        monitor_resolution = (1920, 1080)  # Main resolution
-        # Found through trial and error (DO NOT TOUCH)
-        if self.screen == laptop_resolution:
-            self.offset_y = 50
-            self.offset_x = -5

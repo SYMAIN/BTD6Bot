@@ -2,7 +2,7 @@
 # @Date: 2025-11-21 11:43:33
 
 
-class Threat_detector:
+class ThreatDetector:
     def __init__(self):
         self.enemy_info = []
         self.tower_states = []

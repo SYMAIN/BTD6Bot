@@ -1,5 +1,5 @@
 from Vision.Placement_detector import Placement_detector
-from Game import Game_State
+from Game.Game import Game_State
 import pyautogui
 import pydirectinput
 import time

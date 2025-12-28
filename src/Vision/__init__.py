@@ -1,3 +1,3 @@
-from . import Path_anayzer
-from . import Screen_scanner
-from . import Placement_detector
+from . import path_analyzer
+from . import screen_scanner
+from . import placement_detector

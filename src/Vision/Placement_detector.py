@@ -9,7 +9,7 @@ import time
 import math
 
 
-class Placement_detector:
+class PlacementDetector:
     def __init__(self, bounds_y1, bounds_x1, bounds_y2, bounds_x2):
         self.radii = [75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325]
         self.max_radius = max(self.radii)

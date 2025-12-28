@@ -1,7 +1,14 @@
 # @Author: Simmon
 # @Date: 2025-11-21 11:44:01
 
-from Bot import Bot as BotClass  # Rename to avoid conflict
+from vision.screen_scanner import ScreenScanner
+from action.controller import Controller
+from logic.strategy_engine import StrategyEngine
+from vision.placement_detector import PlacementDetector
+from game.game_state import GameState
+from bot import Bot as BotClass
+
+# Rename to avoid conflict
 import keyboard
 import time
 
@@ -58,13 +65,21 @@ class Main:
         self.pause_event.set()
 
         # Create and start bot instance
-        self.bot_instance = BotClass(pause_event=self.pause_event)
-
+        self.create_bot()
         self.bot_thread = threading.Thread(target=self._run_bot)
         self.bot_thread.daemon = True  # Thread will exit when main program exits
         self.bot_thread.start()
 
         print("Bot started!")
+
+    def create_bot(self):
+        scanner = ScreenScanner()
+        game = GameState()
+        PD = PlacementDetector(*game.get_game_size())
+        MC = Controller(PD)
+        SE = StrategyEngine(game, MC)
+
+        self.bot_instance = BotClass(scanner, game, PD, MC, SE, self.pause_event)
 
     def _run_bot(self):
         """Internal method to run the bot"""
