@@ -46,4 +46,21 @@ PLACEMENT_DETECTION_RADII = [
 ]  # Pixel radii for placement validation
 
 RADIUS_SAMPLE_SIZE = 50
-VALID_SCORE = 0.25
+# Exponent controlling sampling scaling: smaller radii get more samples.
+RADIUS_SAMPLE_EXPONENT = 1.5
+# Separate exponent for weighting rings (how much more influence small radii have)
+RADIUS_WEIGHT_EXPONENT = 2.0
+# Maximum multiplier for samples (allows denser sampling for tiny radii)
+MAX_SAMPLE_MULTIPLIER = 6
+# If the N smallest rings have a combined invalid fraction below this
+# threshold, consider the placement valid immediately.
+SMALL_RADIUS_ACCEPT_COUNT = 2
+SMALL_RADIUS_ACCEPT_THRESHOLD = 0.05
+
+VALID_SCORE = 0.1
+
+MONKEY_EXIST_MENU_COLOR = [
+    128,
+    74,
+    36,
+]  # When a monkey is pressed, a upgrade menu pops out. This color will appear in the thousands.

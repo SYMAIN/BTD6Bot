@@ -7,6 +7,7 @@ from utils.monkey_helpers import (
 )
 from data.game import UpgradeOption, Monkey
 import random
+from config.settings import settings
 
 
 class RandomStrategy(Strategy):
@@ -59,7 +60,7 @@ class RandomStrategy(Strategy):
 
         else:
             # Place new monkey
-            monkey_name, location = self._random_monkey_location(game_state)
+            monkey_name, location = self._random_monkey_location()
             cost = get_monkey_cost(monkey_name)
 
             if current_gold >= cost and controller.place_monkey(
@@ -68,10 +69,10 @@ class RandomStrategy(Strategy):
                 new_monkey = Monkey(name=monkey_name, location=location, path=(0, 0, 0))
                 game_state.add_monkey(new_monkey)
 
-    def _random_monkey_location(self, game_state):
+    def _random_monkey_location(self):
 
         # TODO: Place hero
-        game_size = game_state.get_game_size()
+        game_size = settings.GAME_SIZE
         while True:
             monkey_name = random.choice(get_monkey_names())
             if monkey_name != "heroes":

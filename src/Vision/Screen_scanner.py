@@ -8,9 +8,10 @@ import pytesseract
 import re
 import time
 import pyautogui
-from config.settings import Settings
+from config.settings import settings
+from utils.logger import logger
 
-pytesseract.pytesseract.tesseract_cmd = Settings.TESSERACT_PATH
+pytesseract.pytesseract.tesseract_cmd = settings.TESSERACT_PATH
 
 
 class ScreenScanner:
@@ -25,9 +26,9 @@ class ScreenScanner:
             return self.process_frame(frame)
 
     def process_frame(self, frame) -> dict:
-        health = Settings.CURRENT_UI["health"]
-        gold = Settings.CURRENT_UI["gold"]
-        _round = Settings.CURRENT_UI["round"]
+        health = settings.CURRENT_UI["health"]
+        gold = settings.CURRENT_UI["gold"]
+        _round = settings.CURRENT_UI["round"]
 
         regions = {
             "health": frame[health[0] : health[1], health[2] : health[3]],
@@ -59,7 +60,7 @@ class ScreenScanner:
 
             # Debug: Save image
             debug_path = (
-                rf"{Settings.DEBUG_DIR}\{Settings.SCREEN_RES[1]}p\debug_{name}.png"
+                rf"{settings.DEBUG_DIR}\{settings.SCREEN_RES[1]}p\debug_{name}.png"
             )
             cv2.imwrite(debug_path, mask)
 
@@ -70,9 +71,12 @@ class ScreenScanner:
             print(f"[{time.strftime('%H:%M:%S')}] {name}: {text}")
             return text
 
-        except Exception as e:
-            print(f"Error processing {name}: {e}")
-            return ""
+        except (cv2.error, pytesseract.TesseractError) as e:
+            logger.error(f"OCR failed for {name}: {e}")
+            return None  # Or raise a custom exception
+        except FileNotFoundError:
+            logger.critical(f"Tesseract not found at {settings.TESSERACT_PATH}")
+            return
 
     def _preprocess(self, frame):
         try:

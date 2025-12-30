@@ -12,14 +12,10 @@ At the beginning of each round, use all abilities
 
 
 class Bot:
-    def __init__(
-        self, scanner, game_state, detector, controller, strategy_engine, pause_event
-    ):
+    def __init__(self, scanner, game_state, strategy_engine, pause_event):
         self.scanner = scanner
-        self.game = game_state
-        self.PD = detector
-        self.MC = controller
-        self.SE = strategy_engine
+        self.game_state = game_state
+        self.strategy_engine = strategy_engine
 
         # Control flags
         self.running = True  # Allows external control
@@ -37,7 +33,7 @@ class Bot:
         """Main bot loop - can be stopped by setting self.running = False"""
         print("Bot main loop started")
 
-        self.SE.select_strategy("random")  # First strategy
+        self.strategy_engine.select_strategy("random")  # First strategy
 
         try:
             while self.running:
@@ -48,7 +44,7 @@ class Bot:
                 if current_time - self.last_capture_time >= settings.CAPTURE_INTERVAL:
 
                     self.screen_capture()
-                    self.SE.run()
+                    self.strategy_engine.run()
 
                     self.last_capture_time = current_time
                     self.capture_count += 1
@@ -79,18 +75,40 @@ class Bot:
                 print("No results from scanner")
                 return
 
+            def _to_int(val, default=0):
+                try:
+                    if val is None:
+                        return default
+                    return int(val)
+                except (ValueError, TypeError):
+                    return default
+
             _res = GameInfo(
-                res["round"]["current"],
-                res["round"]["total"],
-                res["health"],
-                res["gold"],
+                _to_int(res.get("round", {}).get("current")),
+                _to_int(res.get("round", {}).get("total")),
+                _to_int(res.get("health")),
+                _to_int(res.get("gold")),
             )
 
+            # Log if scanner returned unexpected values
+            if any(
+                v is None
+                for v in [
+                    res.get("health"),
+                    res.get("gold"),
+                    res.get("round", {}).get("current"),
+                    res.get("round", {}).get("total"),
+                ]
+            ):
+                print(
+                    "Warning: Scanner returned missing or invalid numeric fields; using defaults where necessary."
+                )
+
             # Update game state
-            self.game.update(_res)
+            self.game_state.update(_res)
 
             # Print current state
-            self.game.print_status()
+            self.game_state.print_status()
 
         except Exception as e:
             print(f"Error in screen_capture: {e}")

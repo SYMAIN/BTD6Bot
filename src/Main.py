@@ -75,11 +75,11 @@ class Main:
     def create_bot(self):
         scanner = ScreenScanner()
         game = GameState()
-        PD = PlacementDetector(*game.get_game_size())
+        PD = PlacementDetector()
         MC = Controller(PD)
         SE = StrategyEngine(game, MC)
 
-        self.bot_instance = BotClass(scanner, game, PD, MC, SE, self.pause_event)
+        self.bot_instance = BotClass(scanner, game, SE, self.pause_event)
 
     def _run_bot(self):
         """Internal method to run the bot"""
