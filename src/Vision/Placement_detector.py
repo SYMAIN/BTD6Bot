@@ -97,7 +97,7 @@ class PlacementDetector:
 
             # Immediate fail for strongly invalid rings (helps small-radius cases)
             if ring_frac >= per_radius_fail_threshold:
-                print(
+                logger.debug(
                     f"Immediate fail at radius {radius}: {ring_invalid}/{ring_total} ({ring_frac:.2%})"
                 )
                 return False
@@ -110,7 +110,7 @@ class PlacementDetector:
                 if i == small_count - 1 and small_total > 0:
                     small_frac = small_invalid / small_total
                     if small_frac <= SMALL_RADIUS_ACCEPT_THRESHOLD:
-                        print(
+                        logger.debug(
                             f"Early accept based on smallest {small_count} rings: {small_invalid}/{small_total} ({small_frac:.2%})"
                         )
                         return True
@@ -119,7 +119,7 @@ class PlacementDetector:
             weighted_invalid += ring_frac * weight
             weight_sum += weight
 
-            print(
+            logger.debug(
                 f"Radius: {radius} | invalid: {ring_frac:.4f} | sample_size: {len(offsets)}"
             )
 
@@ -127,7 +127,7 @@ class PlacementDetector:
             return True
 
         final_score = weighted_invalid / weight_sum
-        print(f"Validation Score (weighted): {final_score:.2%}")
+        logger.info(f"Validation Score (weighted): {final_score:.2%}")
         return final_score < VALID_SCORE
 
     def is_strong_black(self, r: int, g: int, b: int) -> int:
@@ -177,32 +177,50 @@ class PlacementDetector:
         img = pyautogui.screenshot(region=region)
         return np.array(img)
 
-    def _count_target_pixels(self, img, target_rgb: np.ndarray, tolerance: int) -> int:
-        """Count pixels within tolerance of the target RGB in an image.
+    def _count_target_pixels(
+        self, img, target_rgb: np.ndarray, tolerance: int = 0
+    ) -> int:
+        """Count pixels that match the target RGB.
 
-        Accepts either a PIL Image or a numpy array.
-        Returns the number of matching pixels (int).
+        If `tolerance` is 0 or None, performs an exact match. Accepts either a
+        PIL Image or a numpy array. Returns the number of matching pixels (int).
+        On error, logs a warning and returns 0.
         """
-        # If PIL Image, convert to RGB numpy array
-        if hasattr(img, "mode"):
-            img = img.convert("RGB")
-            arr = np.array(img)
-        else:
-            arr = img
+        try:
+            # If PIL Image, convert to RGB numpy array
+            if hasattr(img, "mode"):
+                img = img.convert("RGB")
+                arr = np.array(img)
+            else:
+                arr = img
 
-        # Convert to signed ints to avoid uint8 wrap-around on subtraction
-        arr = arr.astype(np.int16)
-        target = target_rgb.astype(np.int16)
+            # If image has alpha channel, drop it
+            if arr.ndim == 3 and arr.shape[2] == 4:
+                arr = arr[:, :, :3]
 
-        color_diff = np.abs(arr - target)
-        matches = np.all(color_diff <= tolerance, axis=2)
-        return int(np.sum(matches))
+            # Convert to signed ints to avoid uint8 wrap-around on subtraction
+            arr = arr.astype(np.int16)
+            target = np.array(target_rgb[:3]).astype(np.int16)
+
+            if tolerance is None:
+                tolerance = 0
+
+            color_diff = np.abs(arr - target)
+
+            if tolerance == 0:
+                matches = np.all(color_diff == 0, axis=2)
+            else:
+                matches = np.all(color_diff <= tolerance, axis=2)
+
+            return int(np.count_nonzero(matches))
+        except Exception as e:
+            logger.warning(f"_count_target_pixels error: {e}")
+            return 0
 
     def verify_monkey_selected(self, y: int, x: int) -> bool:
         """Faster verification using numpy array operations."""
 
         TARGET_RGB = np.array(MONKEY_EXIST_MENU_COLOR, dtype=np.int16)
-        TOLERANCE = 5
 
         # Click monkey
         pyautogui.moveTo(x, y)
@@ -213,9 +231,9 @@ class PlacementDetector:
         screenshot = pyautogui.screenshot()
         pyautogui.press("esc")  # Cancel Menu
 
-        match_count = self._count_target_pixels(screenshot, TARGET_RGB, TOLERANCE)
+        match_count = self._count_target_pixels(screenshot, TARGET_RGB)
 
-        print(f"Upgrade UI pixels: {match_count}")
+        logger.debug(f"Upgrade UI pixels: {match_count}")
         return match_count > 1000
 
     def capture_radius_rings(self, x, y):
@@ -227,7 +245,7 @@ class PlacementDetector:
         # Draw center point (cursor)
         cv2.circle(visualization, (vis_size // 2, vis_size // 2), 5, (0, 0, 0), -1)
 
-        print("Capturing screenshots at different self.radii...")
+        logger.info("Capturing screenshots at different self.radii...")
 
         for radius in self.radii:
             # Capture square region
@@ -245,7 +263,7 @@ class PlacementDetector:
                 # Save raw screenshot
                 filename = f"radius_{radius}px.png"
                 Image.fromarray(img).save(filename)
-                print(f"Saved: {filename}")
+                logger.info(f"Saved: {filename}")
 
                 # Mark the radius distance on visualization
                 cv2.circle(
@@ -266,9 +284,8 @@ class PlacementDetector:
                 )
 
             except Exception as e:
-                print(f"Error capturing radius {radius}: {e}")
+                logger.error(f"Error capturing radius {radius}: {e}")
 
         # Save visualization
         Image.fromarray(visualization).save("radius_visualization.png")
-        print("\nSaved radius_visualization.png")
-        print("This shows where each screenshot was taken relative to cursor.")
+        logger.info("\nSaved radius_visualization.png")

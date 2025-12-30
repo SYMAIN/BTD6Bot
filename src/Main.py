@@ -7,6 +7,7 @@ from logic.strategy_engine import StrategyEngine
 from vision.placement_detector import PlacementDetector
 from game.game_state import GameState
 from bot import Bot as BotClass
+from utils.logger import logger
 
 # Rename to avoid conflict
 import keyboard
@@ -70,7 +71,7 @@ class Main:
         self.bot_thread.daemon = True  # Thread will exit when main program exits
         self.bot_thread.start()
 
-        print("Bot started!")
+        logger.info("Bot started!")
 
     def create_bot(self):
         scanner = ScreenScanner()
@@ -86,7 +87,7 @@ class Main:
         try:
             self.bot_instance.run()
         except Exception as e:
-            print(f"Bot crashed: {e}")
+            logger.error(f"Bot crashed: {e}")
             import traceback
 
             traceback.print_exc()
@@ -95,10 +96,10 @@ class Main:
     def stop_process(self):
         """Stop the bot"""
         if not self.running:
-            print("Bot is not running!")
+            logger.warning("Bot is not running!")
             return
 
-        print("\nStopping bot...")
+        logger.info("\nStopping bot...")
         self.running = False
 
         # Signal the bot to stop
@@ -109,7 +110,7 @@ class Main:
 
         # Wait a bit for clean shutdown
         time.sleep(0.5)
-        print("Bot stopped.")
+        logger.info("Bot stopped.")
 
     def exit_program(self):
         """Exit the program cleanly"""
@@ -140,14 +141,14 @@ class Main:
 
     def pause_program(self):
         if not self.running:
-            print("Bot is not running!")
+            logger.warning("Bot is not running!")
             return
 
         if self.pause_event.is_set():
-            print("Pausing...")
+            logger.warning("Pausing...")
             self.pause_event.clear()  # pause
         else:
-            print("Unpausing...")
+            logger.warning("Unpausing...")
             self.pause_event.set()  # resume
 
 

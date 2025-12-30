@@ -53,11 +53,11 @@ class Controller:
                 if not self.PD.verify_monkey_selected(y, x):
                     logger.warning(f"No monkey found at ({y}, {x})")
                     return False
-                print(f"Placed monkey: {name} at ({y}, {x})")
+                logger.info(f"Placed monkey: {name} at ({y}, {x})")
                 return True
             else:
                 # If invalid, cancel the whole operation
-                print(f"Invalid spot at ({y}, {x}). Cancelling.")
+                logger.warning(f"Invalid spot at ({y}, {x}). Cancelling.")
                 self.cancel()
                 return False
 

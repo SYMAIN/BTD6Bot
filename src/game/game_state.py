@@ -3,6 +3,7 @@
 
 from config.settings import settings
 from data.game import GameInfo, Monkey
+from utils.logger import logger
 import pyautogui
 import json
 
@@ -11,11 +12,11 @@ class GameState:
     def __init__(self, game_mode="medium"):
 
         # In game
-        self.monkey_location = []  # Monkey object
-        self.round = 1
-        self.total_round = 0
-        self.health = 0
-        self.gold = 0
+        self.monkey_location: list[Monkey] = []  # Monkey object
+        self.round: int = 1
+        self.total_round: int = 0
+        self.health: int = 0
+        self.gold: int = 0
         self.game_mode = game_mode
 
     def to_info(self) -> GameInfo:
@@ -41,7 +42,7 @@ class GameState:
             self.gold = int(data.gold)
 
         except Exception as e:
-            print(f"Error updating game state: {e}")
+            logger.error(f"Error updating game state: {e}")
 
     # update monkey location with idx
     def update_monkey(self, data: Monkey, idx):
@@ -61,4 +62,4 @@ class GameState:
         status_parts.append(f"Gold: 💰 ${self.gold}")
 
         if status_parts:
-            print(f"📊 Status: {' | '.join(status_parts)}")
+            logger.info(f"📊 Status: {' | '.join(status_parts)}")

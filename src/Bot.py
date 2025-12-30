@@ -3,7 +3,9 @@
 
 from config.settings import settings
 from data.game import GameInfo
+from utils.logger import logger
 import time
+import cv2
 
 """
 At the beginning of each round, use all abilities
@@ -31,7 +33,7 @@ class Bot:
 
     def run(self):
         """Main bot loop - can be stopped by setting self.running = False"""
-        print("Bot main loop started")
+        logger.info("Bot main loop started")
 
         self.strategy_engine.select_strategy("random")  # First strategy
 
@@ -53,26 +55,26 @@ class Bot:
                 time.sleep(0.1)
 
         except KeyboardInterrupt:
-            print("Bot interrupted by keyboard")
+            logger.warning("Bot interrupted by keyboard")
         except Exception as e:
-            print(f"Bot error: {e}")
+            logger.error(f"Bot error: {e}")
             import traceback
 
             traceback.print_exc()
         finally:
-            print(f"Bot stopped. Captured {self.capture_count} screens.")
+            logger.critical(f"Bot stopped. Captured {self.capture_count} screens.")
 
     def screen_capture(self):
         """Capture and process screen"""
         try:
             timestamp = time.strftime("%H:%M:%S")
-            print(f"\n[{timestamp}] Capture #{self.capture_count + 1}")
+            logger.info(f"Capture #{self.capture_count + 1}")
 
             # Capture and get results
             res = self.scanner.capture()
 
             if not res:
-                print("No results from scanner")
+                logger.warning("No results from scanner")
                 return
 
             def _to_int(val, default=0):
@@ -90,20 +92,6 @@ class Bot:
                 _to_int(res.get("gold")),
             )
 
-            # Log if scanner returned unexpected values
-            if any(
-                v is None
-                for v in [
-                    res.get("health"),
-                    res.get("gold"),
-                    res.get("round", {}).get("current"),
-                    res.get("round", {}).get("total"),
-                ]
-            ):
-                print(
-                    "Warning: Scanner returned missing or invalid numeric fields; using defaults where necessary."
-                )
-
             # Update game state
             self.game_state.update(_res)
 
@@ -111,4 +99,11 @@ class Bot:
             self.game_state.print_status()
 
         except Exception as e:
-            print(f"Error in screen_capture: {e}")
+            logger.error(f"Error in screen_capture: {e}")
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        cv2.destroyAllWindows()
+        self.cleanup_resources()

@@ -69,6 +69,9 @@ class RandomStrategy(Strategy):
                 new_monkey = Monkey(name=monkey_name, location=location, path=(0, 0, 0))
                 game_state.add_monkey(new_monkey)
 
+        # Spam all the available abilities
+        controller.spam_abilities()
+
     def _random_monkey_location(self):
 
         # TODO: Place hero
@@ -81,5 +84,4 @@ class RandomStrategy(Strategy):
         while True:
             x = random.randrange(game_size[1], game_size[3])  # x within width
             y = random.randrange(game_size[0], game_size[2])  # y within height
-            print(f"Random position: x{x}, y{y}")
             return monkey_name, (y, x)

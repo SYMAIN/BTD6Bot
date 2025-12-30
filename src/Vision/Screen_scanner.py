@@ -60,7 +60,7 @@ class ScreenScanner:
 
             # Debug: Save image
             debug_path = (
-                rf"{settings.DEBUG_DIR}\{settings.SCREEN_RES[1]}p\debug_{name}.png"
+                settings.DEBUG_DIR / f"{settings.SCREEN_RES[1]}p" / f"debug_{name}.png"
             )
             cv2.imwrite(debug_path, mask)
 
@@ -68,7 +68,7 @@ class ScreenScanner:
 
             text = pytesseract.image_to_string(mask, config=config).strip()
 
-            print(f"[{time.strftime('%H:%M:%S')}] {name}: {text}")
+            logger.debug(f"[{name}: {text}")
             return text
 
         except (cv2.error, pytesseract.TesseractError) as e:
@@ -98,5 +98,5 @@ class ScreenScanner:
             return result
 
         except Exception as e:
-            print(f"Preprocessing error: {e}")
+            logger.error(f"Preprocessing error: {e}")
             return np.zeros((50, 200), dtype=np.uint8)

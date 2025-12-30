@@ -1,11 +1,10 @@
-# utils/logger.py
 import logging
 import sys
 from pathlib import Path
 
 
-def SetupLogger(name: str, log_file: Path = None, level=logging.INFO):
-    """Set up logger with file and console handlers."""
+def setup_logger(name: str, log_file: Path = None, level=logging.INFO):
+    """Set up logger that resets log file each run."""
     logger = logging.getLogger(name)
     logger.setLevel(level)
 
@@ -14,7 +13,7 @@ def SetupLogger(name: str, log_file: Path = None, level=logging.INFO):
 
     # Formatter
     formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt="%H:%M:%S"
     )
 
     # Console handler
@@ -22,10 +21,11 @@ def SetupLogger(name: str, log_file: Path = None, level=logging.INFO):
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
 
-    # File handler
+    # File handler (overwrites each run)
     if log_file:
         log_file.parent.mkdir(parents=True, exist_ok=True)
-        file_handler = logging.FileHandler(log_file)
+        # 'w' mode truncates file each time
+        file_handler = logging.FileHandler(log_file, mode="w")
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 
@@ -33,4 +33,4 @@ def SetupLogger(name: str, log_file: Path = None, level=logging.INFO):
 
 
 # Usage
-logger = SetupLogger("BTD6Bot", Path("logs/bot.log"))
+logger = setup_logger("BTD6Bot", Path("logs/bot.log"))
